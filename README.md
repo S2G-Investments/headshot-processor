@@ -122,25 +122,19 @@ Input: Place John.Doe.photo.png in the headshots directory.
 Command:
 sh
 
-Copy
+```bash
 uv run process_headshots.py
+```
+
 Output: processed_headshots/John.Doe.jpg (cropped, resized to 300px width, saved as JPEG).
+
 Example 2: Handling Multiple Files
 Input: Place Alice.Smith.headshot.jpg and Bob.Jones.profile.png in headshots.
 Command:
-sh
-
-Copy
+```bash
 uv run process_headshots.py
+```
+
 Output:
 processed_headshots/Alice.Smith.jpg
 processed_headshots/Bob.Jones.jpg
-Troubleshooting and Notes
-Multiple Faces: The script selects the largest face if multiple are detected. Modify face detection parameters in the script if needed.
-No Face Detected: If no face is found, the full image is used. Adjust the script's fallback behavior as necessary.
-Padding: The crop includes 20% padding around the face. Edit pad_w and pad_h in the script to adjust this.
-Adding Dependencies: To install additional packages, use:
-sh
-
-Copy
-uv add <package-name>

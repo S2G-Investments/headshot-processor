@@ -12,3 +12,9 @@ wheels/
 # Headshot directories
 headshots/
 processed_headshots/
+
+# Ignore all files in the headshots directory
+headshots/*
+
+# Ignore all files in the processed_headshots directory
+processed_headshots/*   
