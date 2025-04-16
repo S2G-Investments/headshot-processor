@@ -18,3 +18,5 @@ headshots/*
 
 # Ignore all files in the processed_headshots directory
 processed_headshots/*   
+
+.DS_Store

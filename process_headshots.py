@@ -11,14 +11,14 @@ if not os.path.exists(output_dir):
     os.makedirs(output_dir)
 
 # Regex pattern to match "FirstName.LastName" at the start of the filename
-name_pattern = r"^([A-Z][a-z]+)\.([A-Z][a-z]+)\..*"
+name_pattern = r"^([A-Z][a-z]+)\.([A-Z][a-zA-Z]+)\..*"
 
 # Load the Haar cascade for face detection
 cascade_path = cv2.data.haarcascades + 'haarcascade_frontalface_default.xml'
 face_cascade = cv2.CascadeClassifier(cascade_path)
 
 # Padding settings
-padding_factor = 0.2  # 20% of face width and height
+padding_factor = 0.4  # 40% of face width and height
 extra_padding = 5     # Additional pixels for tighter crop
 
 # Process each file in the input directory
