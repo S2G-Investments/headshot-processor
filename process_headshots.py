@@ -15,6 +15,7 @@ logging.basicConfig(
 # Define directories
 input_dir = "headshots"
 output_dir = "processed_headshots"
+existing_processed_dir = "existing_processed_headshots" # Directory containing already processed files
 
 # Create output directory if it doesn't exist
 try:
@@ -23,6 +24,20 @@ try:
 except Exception as e:
     logging.error(f"Failed to create output directory '{output_dir}': {str(e)}. Possible cause: Insufficient permissions or invalid path.")
     raise
+
+# Get a set of already processed filenames
+existing_processed_files = set()
+if os.path.exists(existing_processed_dir):
+    try:
+        for f_name in os.listdir(existing_processed_dir):
+            existing_processed_files.add(f_name)
+        print(f"Found {len(existing_processed_files)} files in '{existing_processed_dir}'.")
+    except Exception as e:
+        logging.error(f"Failed to read directory '{existing_processed_dir}': {str(e)}. Will proceed without skipping existing files.")
+        print(f"Warning: Could not read '{existing_processed_dir}'. Files will not be skipped based on its content.")
+else:
+    print(f"Directory '{existing_processed_dir}' not found. No files will be skipped based on its content.")
+
 
 # Regex pattern to match "FirstName.LastName" at the start of the filename
 name_pattern = r"^([A-Z][a-z]+)\.([A-Z][a-zA-Z]+)\..*"
@@ -46,18 +61,26 @@ extra_padding = 5     # Additional pixels for tighter crop
 for filename in os.listdir(input_dir):
     try:
         if not filename.lower().endswith(('.jpg', '.jpeg', '.png')):
-            logging.error(f"Skipping non-image file: '{filename}'. Reason: File extension not in supported list (.jpg, .jpeg, .png).")
+            logging.info(f"Skipping non-image file: '{filename}'. Reason: File extension not in supported list (.jpg, .jpeg, .png).")
             print(f"Skipping non-image file: {filename}")
             continue
 
         match = re.match(name_pattern, filename)
         if not match:
-            logging.error(f"Filename does not match pattern: '{filename}'. Expected format: 'FirstName.LastName.extension' with capitalized names.")
+            logging.warning(f"Filename does not match pattern: '{filename}'. Expected format: 'FirstName.LastName.extension' with capitalized names.")
             print(f"Filename does not match pattern: {filename}")
             continue
 
         first_name, last_name = match.groups()
         new_name = f"{first_name}.{last_name}.jpg"
+
+        # --- Check if the file already exists in the existing_processed_headshots directory ---
+        if new_name in existing_processed_files:
+            print(f"Skipping '{filename}' because '{new_name}' already exists in '{existing_processed_dir}'.")
+            logging.info(f"Skipping '{filename}' because '{new_name}' already exists in '{existing_processed_dir}'.")
+            continue
+        # --- End of check ---
+
         image_path = os.path.join(input_dir, filename)
 
         image = cv2.imread(image_path)
@@ -86,9 +109,20 @@ for filename in os.listdir(input_dir):
             print(f"No face detected in {filename}, using whole image.")
 
         original_height, original_width = cropped.shape[:2]
+        if original_width == 0: # Avoid division by zero if crop is empty for some reason
+            logging.error(f"Cropped image for '{filename}' has zero width. Skipping resize.")
+            print(f"Error: Cropped image for {filename} has zero width.")
+            continue
+
         new_width = 300
         new_height = int((original_height / original_width) * new_width)
-        resized = cv2.resize(cropped, (new_width, new_height), interpolation=cv2.INTER_AREA)
+        if new_height <=0 or new_width <=0: # ensure valid dimensions
+            logging.error(f"Invalid resize dimensions for '{filename}' (W:{new_width}, H:{new_height}). Using original cropped image.")
+            print(f"Warning: Invalid resize dimensions for {filename}. Using original cropped image instead of resizing.")
+            resized = cropped
+        else:
+            resized = cv2.resize(cropped, (new_width, new_height), interpolation=cv2.INTER_AREA)
+
 
         output_path = os.path.join(output_dir, new_name)
         if cv2.imwrite(output_path, resized):
@@ -100,3 +134,5 @@ for filename in os.listdir(input_dir):
     except Exception as e:
         logging.error(f"Unexpected error processing '{filename}': {str(e)}. Possible cause: Runtime issue or unhandled edge case.")
         print(f"Error processing {filename}: {str(e)}")
+
+print("Script finished.")

@@ -19,4 +19,11 @@ headshots/*
 # Ignore all files in the processed_headshots directory
 processed_headshots/*   
 
+# Ignore all files in the existing_processed_headshots directory
+existing_processed_headshots/*
+
+
 .DS_Store
+
+# Log files
+*.txt
