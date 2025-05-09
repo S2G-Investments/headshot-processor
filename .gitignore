@@ -12,7 +12,7 @@ wheels/
 # Headshot directories
 headshots/
 processed_headshots/
-
+existing_processed_headshots/
 # Ignore all files in the headshots directory
 headshots/*
 
@@ -27,3 +27,4 @@ existing_processed_headshots/*
 
 # Log files
 *.txt
+*.log
